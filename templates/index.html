@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<title>Efe Siber Şifre Yöneticisi</title>
+
+<style>
+
+body{
+background:#0d1117;
+color:white;
+font-family:sans-serif;
+text-align:center;
+padding:20px;
+}
+
+.kutu{
+background:#161b22;
+padding:20px;
+border-radius:10px;
+margin:auto;
+margin-top:20px;
+max-width:700px;
+border:1px solid #30363d;
+}
+
+input{
+width:80%;
+padding:10px;
+margin:5px;
+border:none;
+border-radius:5px;
+background:#0d1117;
+color:white;
+border:1px solid #30363d;
+}
+
+button{
+padding:10px 20px;
+border:none;
+border-radius:5px;
+cursor:pointer;
+background:#238636;
+color:white;
+}
+
+button:hover{
+opacity:.8;
+}
+
+table{
+width:100%;
+margin-top:20px;
+border-collapse:collapse;
+}
+
+td,th{
+border:1px solid #30363d;
+padding:10px;
+}
+
+.sil-btn{
+background:red;
+}
+
+</style>
+
+</head>
+<body>
+
+<div id="girisEkrani"
+style="
+position:fixed;
+top:0;
+left:0;
+width:100%;
+height:100%;
+background:#0d1117;
+display:flex;
+justify-content:center;
+align-items:center;
+z-index:9999;
+">
+
+<div class="kutu">
+
+<h2>🔒 Efe Siber Giriş</h2>
+
+<input
+id="girisSifre"
+type="password"
+placeholder="Şifre">
+
+<br><br>
+
+<button onclick="kontrol()">
+Giriş Yap
+</button>
+
+</div>
+
+</div>
+
+<h1>🔒 Efe Siber Şifre Kasası</h1>
+
+<div class="kutu">
+
+<h3>Yeni Şifre Ekle</h3>
+
+<input id="platform" placeholder="Platform"><br>
+
+<input
+id="kullanici"
+placeholder="Kullanıcı adı"
+><br>
+
+<input
+id="sifre"
+placeholder="Şifre"
+type="password"
+><br>
+
+<button onclick="sifreEkle()">
+Buluta Kaydet 🚀
+</button>
+
+</div>
+
+
+<div class="kutu">
+
+<h3>Kayıtlı Şifreler</h3>
+
+<button onclick="sifreleriGetir()">
+Yenile 🔄
+</button>
+
+<table>
+
+<thead>
+
+<tr>
+<th>ID</th>
+<th>Platform</th>
+<th>Kullanıcı</th>
+<th>Şifre</th>
+<th>Sil</th>
+</tr>
+
+</thead>
+
+<tbody id="sifreTablosu">
+
+</tbody>
+
+</table>
+
+</div>
+
+
+<script>
+
+const API_URL="";
+const IMZA="efe_basaran_ozel";
+
+async function sifreEkle(){
+
+try{
+
+const platform_adi=
+document.getElementById(
+"platform"
+).value;
+
+const kullanici_adi=
+document.getElementById(
+"kullanici"
+).value;
+
+const sifre=
+document.getElementById(
+"sifre"
+).value;
+
+
+const cevap=
+await fetch(
+`${API_URL}/sifre_al`,
+{
+
+method:"POST",
+
+headers:{
+"Content-Type":"application/json",
+"Efenin_imzasi":IMZA
+},
+
+body:JSON.stringify({
+
+platform_adi,
+kullanici_adi,
+sifre
+
+})
+
+}
+
+);
+
+const sonuc=
+await cevap.json();
+
+alert(
+sonuc.durum
+);
+
+
+document.getElementById(
+"platform"
+).value="";
+
+document.getElementById(
+"kullanici"
+).value="";
+
+document.getElementById(
+"sifre"
+).value="";
+
+
+sifreleriGetir();
+
+}
+
+catch(hata){
+
+console.log(hata);
+
+alert(
+"Hata oluştu"
+);
+
+}
+
+}
+
+
+
+async function sifreleriGetir(){
+
+try{
+
+const cevap=
+await fetch(
+`${API_URL}/sifre_gor`,
+{
+
+headers:{
+"Efenin_imzasi":IMZA
+}
+
+}
+);
+
+const sifreler=
+await cevap.json();
+
+const tablo=
+document.getElementById(
+"sifreTablosu"
+);
+
+tablo.innerHTML="";
+
+
+sifreler.forEach(
+(veri)=>{
+
+tablo.innerHTML+=`
+
+<tr>
+
+<td>${veri.id}</td>
+
+<td>${veri.platform}</td>
+
+<td>${veri.kullanici_adi}</td>
+
+<td>${veri.sifre}</td>
+
+<td>
+
+<button
+class="sil-btn"
+onclick="
+sifreSil(${veri.id})
+"
+>
+
+Sil
+
+</button>
+
+</td>
+
+</tr>
+
+`;
+
+});
+
+}
+
+catch(e){
+
+console.log(e);
+
+alert(
+"Veriler alınamadı"
+);
+
+}
+
+}
+
+
+
+async function sifreSil(id){
+
+if(
+!confirm(
+"Silinsin mi?"
+)
+)return;
+
+
+const cevap=
+await fetch(
+`${API_URL}/sifre_sil`,
+{
+
+method:"POST",
+
+headers:{
+"Content-Type":"application/json",
+"Efenin_imzasi":IMZA
+},
+
+body:JSON.stringify({
+
+id:id
+
+})
+
+}
+
+);
+
+
+const sonuc=
+await cevap.json();
+
+alert(
+sonuc.durum
+);
+
+sifreleriGetir();
+
+}
+
+
+const SISTEM_SIFRE="maras_elbistan_46_efebasaran_googleplex";
+
+function kontrol(){
+
+let girilen=
+document
+.getElementById(
+"girisSifre"
+)
+.value
+.trim();
+
+if(
+girilen===SISTEM_SIFRE
+){
+
+alert(
+"Giriş başarılı"
+);
+
+document
+.getElementById(
+"girisEkrani"
+)
+.style.display="none";
+
+sifreleriGetir();
+
+}
+else{
+
+alert(
+"Hatalı şifre"
+);
+
+}
+
+}
+</script>
+
+</body>
+</html>
